@@ -1,0 +1,1 @@
+<h1 class="mb-4">Welcome to Faculty page!</h1>
