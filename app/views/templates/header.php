@@ -17,52 +17,45 @@
 <body>
 
     <?php
-    $uri = $_SERVER['REQUEST_URI'];
+    $isAdminPage = isset($_SESSION['admin_logged_in']) ? true : false;
     ?>
-
-    <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="mainNav">
-        <div class="container-fluid px-5 py-3">
-            <div class="navbar-brand d-flex align-items-center">
-                <img src="../../../assets/images/UMakLogo.png" alt="UMak Logo" class="me-3">
-                <a href="#" class="text-decoration-none">UNIVERSITY OF MAKATI</a>
+    <header>
+        <nav>
+            <div class="navbar-left">
+                <img src="../../../assets/images/UMakLogo.png" alt="UMak Logo">
+                <a href="#">UNIVERSITY OF MAKATI</a>
             </div>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"> <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-                <ul class="navbar-nav">
+            <ul class="navbar-right">
+                <?php
+                if (!str_contains($_SERVER['REQUEST_URI'], 'admin')) {
+                ?>
+                    <li><a href="/">Dashboard</a></li>
+                    <li><a href="profile">Profile</a></li>
+                    <li><a href="cv">CV</a></li>
                     <?php
+                } else {
                     if ($_SERVER['REQUEST_URI'] !== '/login' && $_SERVER['REQUEST_URI'] !== '/admin/login') {
                         if (isset($_SESSION['is_logged_in']) || isset($_SESSION['admin_logged_in'])) {
                     ?>
-                            <li class="nav-item">
-                                <a class="nav-link" href="<?= ltrim($uri, '/') ?>">Home</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="<?= ltrim($uri, '/dashboard') ?>">Dashboard</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="<?= ltrim($uri, '/account') ?>">Account</a>
-                            </li>
-                    <?php
+                            <li><a href="<?= $isAdminPage ? '/admin' : '/' ?>">Dashboard</a></li>
+                            <li><a href="<?= $isAdminPage ? '/admin/account' : '/account' ?>">Account</a></li>
+                <?php
                         }
                     }
-                    ?>
-                    <?php
-                    if ($_SERVER['REQUEST_URI'] !== '/login' && $_SERVER['REQUEST_URI'] !== '/admin/login') {
-                        if (isset($_SESSION['is_logged_in']) || isset($_SESSION['admin_logged_in'])) {
-                    ?>
-                            <li class="nav-item">
-                                <a class="nav-link active" href="#" onclick="logout(); return false;">Logout</a>
-                            </li>
-                    <?php
-                        }
+                }
+                ?>
+                <?php
+                if ($_SERVER['REQUEST_URI'] !== '/login' && $_SERVER['REQUEST_URI'] !== '/admin/login') {
+                    if (isset($_SESSION['is_logged_in']) || isset($_SESSION['admin_logged_in'])) {
+                ?>
+                        <li><a onclick="logout(); return false;">Logout</a></li>
+                <?php
                     }
-                    ?>
-                </ul>
-            </div>
-        </div>
-    </nav>
+                }
+                ?>
+            </ul>
+        </nav>
+    </header>
 
     <?php
     require_once __DIR__ . '/modal.php'; ?>

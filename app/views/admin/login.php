@@ -29,10 +29,6 @@
                                 </button>
                             </div>
 
-                            <div class="mb-4">
-                                <a href="#" class="forgot-password">Forgot Password?</a>
-                            </div>
-
                             <button id="submit" type="submit" class="btn btn-login px-4 py-2">Submit</button>
                         </form>
                     </div>
@@ -51,8 +47,11 @@
             const button = document.getElementById('submit');
             button.disabled = true;
 
-            updateFormControl(['txtUsername', 'txtPassword']);
-            fetchModal('/api/login-admin', this, button);
+            const elements = ['txtUsername', 'txtPassword'];
+            fetchModal('/api/login-admin', this, button,
+                () => updateFormControl(elements, 'success'),
+                () => updateFormControl(elements, 'error')
+            );
         });
 
         // Navbar scroll effect

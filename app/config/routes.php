@@ -15,8 +15,14 @@ if (session_status() === PHP_SESSION_NONE) {
 require_once __DIR__ . '/services.php';
 
 Flight::route('GET /', function () {
-    authFaculty();
-    Flight::render('faculty/home', []);
+    // authFaculty();
+    Flight::render('faculty/dashboard', []);
+});
+
+
+Flight::route('GET /profile', function () {
+    // authFaculty();
+    Flight::render('faculty/profile', []);
 });
 
 Flight::route('GET /login', function () {
@@ -28,54 +34,113 @@ Flight::group('/admin', function () {
 
     Flight::route('GET /', function () {
         authAdmin();
-        Flight::render('admin/home', []);
+        $stmt = Flight::db()->query("SELECT COUNT(*) FROM user");
+        $count = $stmt->fetchColumn();
+
+        Flight::render('admin/dashboard', ['count' => $count]);
     });
 
     Flight::route('GET /login', function () {
         isAdminLoggedIn();
         Flight::render('admin/login', []);
     });
+
+    Flight::group('/account', function () {
+
+        Flight::route('GET /', function () {
+            authAdmin();
+
+            $stmt = Flight::db()->query("SELECT * FROM user ORDER BY created_at DESC LIMIT 10");
+            $recentRegisters = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            Flight::render('admin/create-account', ['recentRegisters' => $recentRegisters]);
+        });
+
+        Flight::route('GET /information', function () {
+            authAdmin();
+
+            Flight::render('admin/account-information', []);
+        });
+
+        Flight::route('GET /licenses', function () {
+            authAdmin();
+
+            Flight::render('admin/account-licenses', []);
+        });
+
+        Flight::route('GET /research', function () {
+            authAdmin();
+
+            Flight::render('admin/research-publications', []);
+        });
+
+        Flight::route('GET /security', function () {
+            authAdmin();
+
+            Flight::render('admin/account-security', []);
+        });
+    });
 });
 
 Flight::group('/api', function () {
-    Flight::route('GET /users', function () {
-        // You could actually pull data from the database if you had one set up
-        // $users = Flight::db()->fetchAll("SELECT * FROM users");
-        $users = [
-            ['id' => 1, 'name' => 'Bob Jones', 'email' => 'bob@example.com'],
-            ['id' => 2, 'name' => 'Bob Smith', 'email' => 'bsmith@example.com'],
-            ['id' => 3, 'name' => 'Suzy Johnson', 'email' => 'suzy@example.com'],
-        ];
+    Flight::route('POST /register-account', function () {
+        $db = Flight::db();
+        $data = Flight::request()->data;
 
-        // You actually could overwrite the json() method if you just wanted to
-        // to Flight::json($users); and it would auto set pretty print for you.
-        // https://flightphp.com/learn#overriding
-        Flight::json($users, 200, true, 'utf-8', JSON_PRETTY_PRINT);
-    });
-    Flight::route('GET /users/@id:[0-9]', function ($id) {
-        // You could actually pull data from the database if you had one set up
-        // $user = Flight::db()->fetchRow("SELECT * FROM users WHERE id = ?", [ $id ]);
-        $users = [
-            ['id' => 1, 'name' => 'Bob Jones', 'email' => 'bob@example.com'],
-            ['id' => 2, 'name' => 'Bob Smith', 'email' => 'bsmith@example.com'],
-            ['id' => 3, 'name' => 'Suzy Johnson', 'email' => 'suzy@example.com'],
-        ];
+        $firstName = trim($data->first_name);
+        $lastName = trim($data->last_name);
+        $position = trim($data->assigned_position);
+        $department = trim($data->department);
+        $username = trim($data->username);
+        $password = trim($data->password);
 
-        $users_filtered = array_filter($users, function ($data) use ($id) {
-            return $data['id'] === (int) $id;
-        });
-        if ($users_filtered) {
-            $user = array_pop($users_filtered);
+        // Basic validation
+        if (strlen($username) < 4 || strlen($username) > 20) {
+            Flight::json(['status' => 'error', 'message' => 'Username must be 4-20 characters long']);
+            return;
         }
 
-        Flight::json($user, 200, true, 'utf-8', JSON_PRETTY_PRINT);
-    });
-    Flight::route('POST /users/@id:[0-9]', function ($id) {
-        // You could actually update data from the database if you had one set up
-        // $statement = Flight::db()->runQuery("UPDATE users SET email = ? WHERE id = ?", [ Flight::data['email'], $id ]);
-        Flight::json(['success' => true, 'id' => $id], 200, true, 'utf-8', JSON_PRETTY_PRINT);
-    });
+        if (!preg_match('/^[a-zA-Z0-9_]+$/', $username)) {
+            Flight::json(['status' => 'error', 'message' => 'Username can only contain letters, numbers, and underscores']);
+            return;
+        }
 
+        if (strlen($password) < 6) {
+            Flight::json(['status' => 'error', 'message' => 'Password must be at least 6 characters long']);
+            return;
+        }
+
+        // Check if username already exists
+        $check = $db->prepare("SELECT id FROM user WHERE username = :username");
+        $check->execute(['username' => $username]);
+
+        if ($check->fetch()) {
+            Flight::json(['status' => 'error', 'message' => 'Username already taken']);
+            return;
+        }
+
+        // Hash the password
+        $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
+
+        try {
+            $stmt = $db->prepare("
+            INSERT INTO user (first_name, last_name, assigned_position, department, username, password)
+            VALUES (:first_name, :last_name, :assigned_position, :department, :username, :password)
+        ");
+
+            $stmt->execute([
+                'first_name' => $firstName,
+                'last_name' => $lastName,
+                'assigned_position' => $position,
+                'department' => $department,
+                'username' => $username,
+                'password' => $hashedPassword
+            ]);
+
+            Flight::json(['status' => 'success', 'message' => 'Account registered successfully', 'redirect' => '/admin/account']);
+        } catch (PDOException $e) {
+            Flight::json(['status' => 'error', 'message' => 'Registration failed', 'error' => $e->getMessage()]);
+        }
+    });
 
     Flight::route('POST /login-faculty', function () {
         loginFaculty();
@@ -201,7 +266,7 @@ Flight::group('/api', function () {
             $uniqueFileName = uniqid() . '_' . basename($fileName);
 
             // Define the destination folder
-            $uploadDir = __DIR__ . '/../uploads/';
+            $uploadDir = __DIR__ . '/../uploads/' . $_SESSION['username'];
 
             // Ensure the uploads folder exists
             if (!is_dir($uploadDir)) {

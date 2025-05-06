@@ -29,12 +29,40 @@
                                 </button>
                             </div>
 
-                            <div class="mb-4">
-                                <a href="#" class="forgot-password">Forgot Password?</a>
+                            <button type="button" class="btn forgot-password" data-bs-toggle="modal" data-bs-target="#forgotPasswordModal">
+                                Forgot Password?
+                            </button>
+
+                            <div>
+                                <button id="submit" type="submit" class="btn btn-login px-4 py-2">Submit</button>
                             </div>
 
-                            <button id="submit" type="submit" class="btn btn-login px-4 py-2">Submit</button>
                         </form>
+                        <!-- Forgot Password Modal -->
+                        <div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <form id="forgotPasswordForm" method="POST" action="/forgot-password">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="forgotPasswordModalLabel">Forgot Password</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+
+                                        <div class="modal-body">
+                                            <div class="mb-1">
+                                                <label for="forgot-email" class="form-label">Enter your email or username</label>
+                                                <input type="text" class="form-control" id="forgot-email" name="email_or_username" required>
+                                            </div>
+                                        </div>
+
+                                        <div class="modal-footer">
+                                            <button type="submit" class="btn btn-primary">Send Reset Link</button>
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -51,8 +79,11 @@
             const button = document.getElementById('submit');
             button.disabled = true;
 
-            updateFormControl(['txtUsername', 'txtPassword']);
-            fetchModal('/api/login-faculty', this, button);
+            const elements = ['txtUsername', 'txtPassword'];
+            fetchModal('/api/login-faculty', this, button,
+                () => updateFormControl(elements, 'success'),
+                () => updateFormControl(elements, 'error')
+            );
         });
 
         // Navbar scroll effect

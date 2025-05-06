@@ -76,7 +76,7 @@ function loginAdmin()
 
 function logout()
 {
-    $redirect = isset($_SESSION['admin_logged_in']) ? 'login' : '/login';
+    $redirect = isset($_SESSION['admin_logged_in']) ? '/admin/login' : '/login';
 
     $_SESSION = [];
     session_destroy();

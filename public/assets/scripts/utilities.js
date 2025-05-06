@@ -1,4 +1,4 @@
-function fetchModal(url, data, button) {
+function fetchModal(url, data, button, onSuccess, onError) {
   const formData = new FormData(data);
 
   fetch(url, {
@@ -12,18 +12,26 @@ function fetchModal(url, data, button) {
 
       modalBody.textContent = data.message || 'Unexpected response';
 
+      modalBody.classList.remove('error', 'success');
       modalHeader.classList.remove('error', 'success');
 
       if (data.status === 'success') {
+        modalBody.classList.add('success');
         modalHeader.classList.add('success');
+
+        if (onSuccess) onSuccess();
 
         if (data.redirect) {
           setTimeout(() => {
             window.location.href = data.redirect;
-          }, data.delay || 2000);
+          }, data.delay || 1000);
         }
       } else {
+        modalBody.classList.add('error');
         modalHeader.classList.add('error');
+        if (onError) onError();
+
+        console.error('Error:', data.error);
       }
 
       // Show the modal
@@ -38,6 +46,8 @@ function fetchModal(url, data, button) {
       modalHeader.classList.remove('error', 'success');
       modalHeader.classList.add('error');
 
+      modalBody.classList.remove('error', 'success');
+      modalBody.classList.add('error');
 
       const responseModal = new bootstrap.Modal(document.getElementById('responseModal'));
       responseModal.show();
@@ -46,13 +56,23 @@ function fetchModal(url, data, button) {
     });
 }
 
-function updateFormControl(elements) {
+function updateFormControl(elements, status) {
   elements.forEach((element, index) => {
     const input = document.getElementById(element);
-    if (!input.value) {
+
+    if (status === 'error') {
       input.classList.add('red-outline');
       input.value = "";
+    } else {
+      input.classList.remove('red-outline');
     }
+  });
+}
+
+function clearAllFields(elements) {
+  elements.forEach((element, index) => {
+    const input = document.getElementById(element);
+    input.value = "";
   });
 }
 
@@ -73,7 +93,7 @@ function logout() {
         if (data.redirect) {
           setTimeout(() => {
             window.location.href = data.redirect;
-          }, data.delay || 2000);
+          }, data.delay || 1000);
         }
       } else {
         modalHeader.classList.add('error');
