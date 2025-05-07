@@ -19,15 +19,37 @@ Flight::route('GET /', function () {
     Flight::render('faculty/dashboard', []);
 });
 
-
-Flight::route('GET /profile', function () {
+Flight::route('GET /cv', function () {
     // authFaculty();
-    Flight::render('faculty/profile', []);
+    Flight::render('faculty/cv', []);
 });
 
 Flight::route('GET /login', function () {
     isFacultyLoggedIn();
     Flight::render('faculty/login', []);
+});
+
+Flight::group('/profile', function () {
+
+    Flight::route('GET /', function () {
+        authFaculty();
+        Flight::render('faculty/profile', []);
+    });
+
+    Flight::route('GET /licenses', function () {
+        authFaculty();
+        Flight::render('faculty/account-licenses', []);
+    });
+
+    Flight::route('GET /research', function () {
+        authFaculty();
+        Flight::render('faculty/research-publications', []);
+    });
+
+    Flight::route('GET /security', function () {
+        authFaculty();
+        Flight::render('faculty/account-security', []);
+    });
 });
 
 Flight::group('/admin', function () {

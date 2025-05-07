@@ -501,11 +501,10 @@
             <div class="col-lg-4">
                 <div class="card sidebar-card">
                     <ul class="sidebar-menu">
-                        <li><a href="#">Create New Account</a></li>
-                        <li><a href="#" class="active">Professor Information</a></li>
-                        <li><a href="#">Professional Licenses</a></li>
-                        <li><a href="#">Research and Publications</a></li>
-                        <li><a href="#">Account Security</a></li>
+                        <li><a href="/profile" class="active">Professor Information</a></li>
+                        <li><a href="/profile/licenses">Professional Licenses</a></li>
+                        <li><a href="/profile/research">Research and Publications</a></li>
+                        <li><a href="/profile/security">Account Security</a></li>
                     </ul>
                 </div>
             </div>

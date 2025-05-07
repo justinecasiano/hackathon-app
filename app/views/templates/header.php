@@ -31,7 +31,7 @@
                 ?>
                     <li><a href="/">Dashboard</a></li>
                     <li><a href="profile">Profile</a></li>
-                    <li><a href="cv">CV</a></li>
+                    <li><a href="#">CV</a></li>
                     <?php
                 } else {
                     if ($_SERVER['REQUEST_URI'] !== '/login' && $_SERVER['REQUEST_URI'] !== '/admin/login') {
